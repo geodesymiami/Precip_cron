@@ -6,6 +6,10 @@ import matplotlib.pyplot as plt
 from precip.cli import get_precipitation_lalo
 import pandas as pd
 
+# This is needed to run on a server without a display
+import matplotlib
+matplotlib.use('Agg')
+
 PRECIP_HOME = os.environ.get('PRECIP_HOME')
 SCRATCH_DIR = os.environ.get('SCRATCHDIR')
 VOLCANO_FILE = PRECIP_HOME + '/src/precip/Holocene_Volcanoes_precip_cfg..xlsx'
@@ -53,7 +57,13 @@ def create_parser():
 def get_volcanoes():
     df = pd.read_excel(VOLCANO_FILE, skiprows=1)
     df = df[df['Precip'] != False]
-    return df['Volcano Name'].tolist()
+
+    volcano_dict = {
+        r['Volcano Name'] : {
+            'id': r['Volcano Number']
+        } for _, r in df.iterrows()}
+
+    return volcano_dict
 
 def clean_string(string):
     string = string.replace(' ', '_')
@@ -67,11 +77,12 @@ def main():
     plot_dir = os.path.join(args.plot_dir, 'plots')
     os.makedirs(plot_dir, exist_ok=True)
 
-    list_of_volcanoes = get_volcanoes()[1:]
+    volcano_dict = get_volcanoes()
     list_failed = []
 
-    for volcano in list_of_volcanoes:
-        volcano_dir = os.path.join(plot_dir, clean_string(volcano))
+    for volcano, info in volcano_dict.items():
+        id = info['id']
+        volcano_dir = os.path.join(plot_dir, str(id))
         os.makedirs(volcano_dir, exist_ok=True)
         for style in args.styles:
             inps = argparse.Namespace(style=style, name=[volcano], no_show=True)
@@ -80,7 +91,7 @@ def main():
             except (IndexError, ValueError) as e:
                 list_failed.append(volcano)
                 continue
-            png_path = os.path.join(volcano_dir, f'{style}.png')
+            png_path = os.path.join(volcano_dir, f'{id}_{style}.png')
             plt.savefig(png_path)
             print('#'*50)
             print(f'{'#'*50}\nSaved {png_path}')
