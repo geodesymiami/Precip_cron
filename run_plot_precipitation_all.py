@@ -74,7 +74,7 @@ def main():
     parser = create_parser()
     args, unknown_args = parser.parse_known_args()
 
-    plot_dir = os.path.join(args.plot_dir, 'plots')
+    plot_dir = os.path.join(args.plot_dir, 'precip_plots')
     os.makedirs(plot_dir, exist_ok=True)
 
     volcano_dict = get_volcanoes()
