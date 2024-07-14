@@ -3,7 +3,7 @@
 import os
 import argparse
 import matplotlib.pyplot as plt
-from precip.cli import get_precipitation_lalo
+from precip.cli import plot_precipitation 
 import pandas as pd
 
 # This is needed to run on a server without a display
@@ -14,6 +14,7 @@ PRECIP_HOME = os.environ.get('PRECIP_HOME')
 SCRATCH_DIR = os.environ.get('SCRATCHDIR')
 VOLCANO_FILE = PRECIP_HOME + '/src/precip/Holocene_Volcanoes_precip_cfg..xlsx'
 DEFAULT_STYLES = ['map', 'bar', 'annual', 'strength']
+DEFAULT_STYLES = ['bar', 'annual', 'strength']        # FA 7/2025  map gives problems woth GMT
 
 EXAMPLES = """
 Examples:
@@ -31,11 +32,11 @@ Plot with a different volcano file:
 Plot with different styles:
     run_plot_precipitation_all.py --styles map bar
 
-get_precipitation_lalo --help for more options
+plot_precipitation --help for more options
 """
 
 def create_parser():
-    synopsis = 'Wrapper tool to run get_precipitation_lalo with multiple styles and all volcanoes'
+    synopsis = 'Wrapper tool to run plot_precipitation with multiple styles and all volcanoes'
     parser = argparse.ArgumentParser(
         description=synopsis,
         formatter_class=argparse.RawTextHelpFormatter,
@@ -87,7 +88,7 @@ def main():
         for style in args.styles:
             inps = argparse.Namespace(style=style, name=[volcano], no_show=True)
             try:
-                get_precipitation_lalo.main(unknown_args, inps)
+                plot_precipitation.main(unknown_args, inps)
             except (IndexError, ValueError) as e:
                 list_failed.append(volcano)
                 continue
