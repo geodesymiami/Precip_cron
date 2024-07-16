@@ -83,11 +83,15 @@ def main():
     volcanoes = get_volcanoes()
     failures = {}
 
+
+    # [('map', 1), ('strength', 1), ('strength', 2) ...]
+    plot_params = [(style, i) for style, i in product(args.styles, BINS) if not (style == 'map' and i > 1)]
+
     for volcano, info in volcanoes.items():
         id = info['id']
         volcano_dir = os.path.join(plot_dir, str(id))
         os.makedirs(volcano_dir, exist_ok=True)
-        for style, bins in product(args.styles, BINS):
+        for style, bins in plot_params:
             inps = argparse.Namespace(style=style,
                                       name=[volcano],
                                       no_show=True,
