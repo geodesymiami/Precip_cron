@@ -15,7 +15,7 @@ PRECIP_HOME = os.environ.get('PRECIP_HOME')
 SCRATCH_DIR = os.environ.get('SCRATCHDIR')
 VOLCANO_FILE = PRECIP_HOME + '/src/precip/Holocene_Volcanoes_precip_cfg..xlsx'
 DEFAULT_STYLES = ['map', 'bar', 'annual', 'strength']
-DEFAULT_STYLES = ['bar', 'annual', 'strength']        # FA 7/2025  map gives problems woth GMT
+# DEFAULT_STYLES = ['bar', 'annual', 'strength']        # FA 7/2025  map gives problems woth GMT
 BINS = [1, 2, 3, 4]
 
 EXAMPLES = """
@@ -81,7 +81,7 @@ def main():
     os.makedirs(plot_dir, exist_ok=True)
 
     volcanoes = get_volcanoes()
-    list_failed = []
+    failures = {}
 
     for volcano, info in volcanoes.items():
         id = info['id']
@@ -94,16 +94,20 @@ def main():
                                       bins=bins)
             try:
                 plot_precipitation.main(unknown_args, inps)
-            except (IndexError, ValueError) as e:
-                list_failed.append(volcano)
-                continue
+            except KeyboardInterrupt:
+                raise
+            except Exception as e:
+                failures[volcano] = e
+                print('#'*50)
+                print(f'Failed to plot {volcano} with style {style} and bins {bins}')
             png_path = os.path.join(volcano_dir, f'{id}_{style}_bin_{bins}.png')
             plt.savefig(png_path)
             print('#'*50)
             print(f'{'#'*50}\nSaved {png_path}')
 
     print('#'*50)
-    print(f'Failed to plot for the following volcanoes: {list_failed}')
+    print(f'Failed to plot for the following volcanoes: {len(failures)}')
+    print(failures)
 
 if __name__ == '__main__':
     main()
