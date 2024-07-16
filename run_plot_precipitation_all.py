@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
+from itertools import product
 import os
 import argparse
 import matplotlib.pyplot as plt
-from precip.cli import plot_precipitation 
+from precip.cli import plot_precipitation
 import pandas as pd
 
 # This is needed to run on a server without a display
@@ -15,6 +16,7 @@ SCRATCH_DIR = os.environ.get('SCRATCHDIR')
 VOLCANO_FILE = PRECIP_HOME + '/src/precip/Holocene_Volcanoes_precip_cfg..xlsx'
 DEFAULT_STYLES = ['map', 'bar', 'annual', 'strength']
 DEFAULT_STYLES = ['bar', 'annual', 'strength']        # FA 7/2025  map gives problems woth GMT
+BINS = [1, 2, 3, 4]
 
 EXAMPLES = """
 Examples:
@@ -78,21 +80,24 @@ def main():
     plot_dir = os.path.join(args.plot_dir, 'precip_plots')
     os.makedirs(plot_dir, exist_ok=True)
 
-    volcano_dict = get_volcanoes()
+    volcanoes = get_volcanoes()
     list_failed = []
 
-    for volcano, info in volcano_dict.items():
+    for volcano, info in volcanoes.items():
         id = info['id']
         volcano_dir = os.path.join(plot_dir, str(id))
         os.makedirs(volcano_dir, exist_ok=True)
-        for style in args.styles:
-            inps = argparse.Namespace(style=style, name=[volcano], no_show=True)
+        for style, bins in product(args.styles, BINS):
+            inps = argparse.Namespace(style=style,
+                                      name=[volcano],
+                                      no_show=True,
+                                      bins=bins)
             try:
                 plot_precipitation.main(unknown_args, inps)
             except (IndexError, ValueError) as e:
                 list_failed.append(volcano)
                 continue
-            png_path = os.path.join(volcano_dir, f'{id}_{style}.png')
+            png_path = os.path.join(volcano_dir, f'{id}_{style}_bin_{bins}.png')
             plt.savefig(png_path)
             print('#'*50)
             print(f'{'#'*50}\nSaved {png_path}')
