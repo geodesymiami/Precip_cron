@@ -101,7 +101,9 @@ def main():
             except KeyboardInterrupt:
                 print('#'*50)
                 print(f'Keyboard interrupt detected. Exiting...')
-                break
+                print(f'Failed to plot for the following volcanoes: {len(failures)}')
+                print(failures)
+                raise
             except Exception as e:
                 failures[volcano] = e
                 print('#'*50)
