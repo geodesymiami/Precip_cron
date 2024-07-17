@@ -106,8 +106,9 @@ def main():
                 print(f'Failed to plot {volcano} with style {style} and bins {bins}')
             png_path = os.path.join(volcano_dir, f'{id}_{style}_bin_{bins}.png')
             plt.savefig(png_path)
+            plt.close()
             print('#'*50)
-            print(f'{'#'*50}\nSaved {png_path}')
+            print(f'Saved {png_path}')
 
     print('#'*50)
     print(f'Failed to plot for the following volcanoes: {len(failures)}')
