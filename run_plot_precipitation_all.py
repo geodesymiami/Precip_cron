@@ -99,7 +99,9 @@ def main():
             try:
                 plot_precipitation.main(unknown_args, inps)
             except KeyboardInterrupt:
-                raise
+                print('#'*50)
+                print(f'Keyboard interrupt detected. Exiting...')
+                break
             except Exception as e:
                 failures[volcano] = e
                 print('#'*50)
