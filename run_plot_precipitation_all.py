@@ -68,10 +68,6 @@ def get_volcanoes():
 
     return volcano_dict
 
-def clean_string(string):
-    string = string.replace(' ', '_')
-    string = string.replace(',', '')
-    return string
 
 def main():
     parser = create_parser()
@@ -82,9 +78,8 @@ def main():
 
     volcanoes = get_volcanoes()
     failures = {}
+    i = 0
 
-
-    # [('map', 1), ('strength', 1), ('strength', 2) ...]
     plot_params = [(style, i) for style, i in product(args.styles, BINS) if not (style == 'map' and i > 1)]
 
     for volcano, info in volcanoes.items():
@@ -92,30 +87,25 @@ def main():
         volcano_dir = os.path.join(plot_dir, str(id))
         os.makedirs(volcano_dir, exist_ok=True)
         for style, bins in plot_params:
+            i+=1
             inps = argparse.Namespace(style=style,
-                                      name=[volcano],
+                                      volcano_name=[volcano],
                                       no_show=True,
                                       bins=bins)
+
+            png_path = os.path.join(volcano_dir, f'{id}_{style}_bin_{bins}.png')
             try:
                 plot_precipitation.main(unknown_args, inps)
+                plt.savefig(png_path)
+                plt.close()
             except KeyboardInterrupt:
-                print('#'*50)
-                print(f'Keyboard interrupt detected. Exiting...')
-                print(f'Failed to plot for the following volcanoes: {len(failures)}')
-                print(failures)
-                raise
+                break
             except Exception as e:
-                failures[volcano] = e
-                print('#'*50)
-                print(f'Failed to plot {volcano} with style {style} and bins {bins}')
-            png_path = os.path.join(volcano_dir, f'{id}_{style}_bin_{bins}.png')
-            plt.savefig(png_path)
-            plt.close()
-            print('#'*50)
-            print(f'Saved {png_path}')
+                failures[png_path] = e
 
     print('#'*50)
-    print(f'Failed to plot for the following volcanoes: {len(failures)}')
+    print(f'Failed to plot for the following volcanoes: {len(failures)}/{i}')
+    print(failures.keys())
     print(failures)
 
 if __name__ == '__main__':
